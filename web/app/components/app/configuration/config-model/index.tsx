@@ -24,11 +24,24 @@ export type IConifgModelProps = {
   onShowUseGPT4Confirm: () => void
 }
 
+const modelMaxTokenMap: Record<string, number> = {
+    'gpt-4': 8192,
+    'gpt-4-32k': 32768,
+    'gpt-3.5-turbo': 4096,
+    'text-davinci-003': 4097,
+    'text-davinci-002': 4097,
+    'text-curie-001': 2049,
+    'text-babbage-001': 2049,
+    'text-ada-001': 2049,
+    'text-embedding-ada-002': 8191
+}
+
 const options = [
   { id: 'gpt-3.5-turbo', name: 'gpt-3.5-turbo', type: AppType.chat },
   { id: 'gpt-4', name: 'gpt-4', type: AppType.chat }, // 8k version
   { id: 'gpt-3.5-turbo', name: 'gpt-3.5-turbo', type: AppType.completion },
   { id: 'text-davinci-003', name: 'text-davinci-003', type: AppType.completion },
+  { id: 'gpt-4', name: 'gpt-4', type: AppType.completion }, // 8k version
 ]
 
 const ModelIcon = ({ className }: { className?: string }) => (
@@ -94,7 +107,7 @@ const ConifgModel: FC<IConifgModelProps> = ({
       key: 'max_tokens',
       tip: t('common.model.params.maxTokenTip'),
       step: 100,
-      max: modelId === 'gpt-4' ? 8000 : 4000,
+      max: modelMaxTokenMap[modelId],
     },
   ]
 
@@ -108,6 +121,7 @@ const ConifgModel: FC<IConifgModelProps> = ({
   }, triggerRef)
 
   const handleSelectModel = (id: string) => {
+    const maxToken = modelMaxTokenMap[id];
     return () => {
       if (id === 'gpt-4' && !canUseGPT4) {
         hideConfig()
@@ -115,14 +129,16 @@ const ConifgModel: FC<IConifgModelProps> = ({
         onShowUseGPT4Confirm()
         return
       }
-      if(id !== 'gpt-4' && completionParams.max_tokens > 4000) {
+      if(completionParams.max_tokens > maxToken) {
         Toast.notify({
           type: 'warning',
-          message: t('common.model.params.setToCurrentModelMaxTokenTip')
+          message: t('common.model.params.setToCurrentModelMaxTokenTip', {
+            maxToken
+          })
         })
         onCompletionParamsChange({
           ...completionParams,
-          max_tokens: 4000
+          max_tokens: maxToken
         })
       }
       setModelId(id)
