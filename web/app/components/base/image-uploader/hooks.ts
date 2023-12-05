@@ -197,7 +197,6 @@ export const useClipboardUploader = ({ visionConfig, onUpload, files }: useClipb
   const { handleLocalFileUpload } = useLocalFileUploader({ limit, onUpload, disabled })
 
   const handleClipboardPaste = useCallback((e: ClipboardEvent<HTMLTextAreaElement>) => {
-    e.preventDefault()
     const file = e.clipboardData?.files[0]
 
     if (!file)
